@@ -1,0 +1,99 @@
+N=2500;  dt=0.08;  T=200;  
+sigma=0.2;
+lambda=1.0;
+alpha=0.1;
+beta=0.1;
+
+tau=zeros(1,N);
+R=zeros(1,N);
+tau=exprnd(1/lambda,1,N);    
+R=normrnd(0,sigma,[1,N]);    
+
+L=zeros(1,N);
+L(1,1)=R(1,1);
+for s=2:N
+    L(1,s)=L(1,s-1)+R(1,s);
+end
+   t=zeros(1,N);
+    t(1,1)=0;
+    for i=2:N
+        t(1,i)=t(1,i-1)+tau(1,i-1);
+    end
+    x=cell(1,N);
+    y=cell(1,N);          
+    for i=1:N
+        x{i}=zeros(1,length(0:dt:tau(1,i)));
+        y{i}=zeros(1,length(0:dt:tau(1,i)));
+    end
+ x{1}(1,1)=1.0;
+ y{1}(1,1)=0; 
+for i=1:N
+          if  t(1,i)<=T;                    
+                  for    j=1:length(0:dt:tau(1,i))
+                                x{i}(1,j)=x{1}(1,1)*cos(alpha*(t(1,i)+j*dt)+beta*L(1,i))-y{1}(1,1)*sin(alpha*(t(1,i)+j*dt)+beta*L(1,i));   
+                                y{i}(1,j)=x{1}(1,1)*sin(alpha*(t(1,i)+j*dt)+beta*L(1,i))+y{1}(1,1)*cos(alpha*(t(1,i)+j*dt)+beta*L(1,i));  
+                  end
+                                                
+                     
+                  end  
+                  
+                  sum=t(1,i);             
+                   
+          if    t(1,i)>T;       
+                  break
+         end
+end
+x1=cell2mat(x);
+y1=cell2mat(y);     
+
+t1=0:dt:sum;       
+number=length(t1); 
+x2=x1(1:number);
+y2=y1(1:number);  
+
+
+ x0=cell(1,N);
+ y0=cell(1,N);           
+    for i=1:N
+        x0{i}=zeros(1,length(0:dt:tau(1,i)));
+        y0{i}=zeros(1,length(0:dt:tau(1,i)));
+    end
+ x0{1}(1,1)=1.0;
+ y0{1}(1,1)=0; 
+for i=1:N
+          if  t(1,i)<=T;                    
+                  for    j=2:length(0:dt:tau(1,i))
+                                                                                    
+                               x0{i}(1,j)=x0{i}(1,j-1)-alpha*y0{i}(1,j-1)*dt-beta*y0{i}(1,j-1)*R(1,i);    
+                               y0{i}(1,j)=y0{i}(1,j-1)+alpha*x0{i}(1,j)*dt+beta*x0{i}(1,j)*R(1,i);    
+ 
+                  end
+                        x0{i+1}(1,1)=x0{i}(1,length(0:dt:tau(1,i)))-alpha*y0{i}(1,length(0:dt:tau(1,i)))*dt-beta*y0{i}(1,length(0:dt:tau(1,i)))*R(1,i+1);                       
+                        y0{i+1}(1,1)=y0{i}(1,length(0:dt:tau(1,i)))+alpha*x0{i+1}(1,1)*dt+beta*x0{i+1}(1,1)*R(1,i+1);  
+                  end  
+                  
+                  sum=t(1,i);             
+                   
+          if    t(1,i)>T;       
+                  break
+         end
+end
+x01=cell2mat(x0);
+y01=cell2mat(y0);    
+
+t1=0:dt:sum;       
+number=length(t1); 
+x02=x01(1:number);
+y02=y01(1:number);  
+
+ plot(x2,y2,'--r','LineWidth',0.8);
+ xlabel('P','FontSize',16)
+ ylabel('Q','FontSize',16)
+ legend('the exact solution','numerical scheme (22)'); 
+  hold on
+  
+ plot(x02,y02,'-b','LineWidth',0.8);
+ xlabel('P','FontSize',16)
+ ylabel('Q','FontSize',16)
+ legend('the exact solution','numerical scheme (22)'); 
+  hold off 
